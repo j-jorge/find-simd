@@ -151,12 +151,29 @@ static void benchmark_sse2(benchmark::State& state)
     benchmark::DoNotOptimize(find_int_sse2(values.back(), values.data(), n));
 }
 
-#define RANGE Range(10, 10000000)
+#define VALUES                                  \
+  Arg(1 << 8)                                   \
+  ->Arg(1 << 9)                                 \
+  ->Arg(1 << 10)                                \
+  ->Arg(1 << 11)                                \
+  ->Arg(1 << 12)                                \
+  ->Arg(1 << 13)                                \
+  ->Arg(1 << 14)                                \
+  ->Arg(1 << 15)                                \
+  ->Arg(1 << 16)                                \
+  ->Arg(1 << 17)                                \
+  ->Arg(1 << 18)                                \
+  ->Arg(1 << 19)                                \
+  ->Arg(1 << 20)                                \
+  ->Arg(1 << 21)                                \
+  ->Arg(1 << 22)                                \
+  ->Arg(1 << 23)                                \
+  ->Arg(1 << 24)                                \
 
-BENCHMARK(benchmark_c)->RANGE;
-BENCHMARK(benchmark_c_unrolled_8)->RANGE;
-BENCHMARK(benchmark_cpp)->RANGE;
-BENCHMARK(benchmark_sse2)->RANGE;
+BENCHMARK(benchmark_c)->VALUES;
+BENCHMARK(benchmark_c_unrolled_8)->VALUES;
+BENCHMARK(benchmark_cpp)->VALUES;
+BENCHMARK(benchmark_sse2)->VALUES;
 
 std::chrono::milliseconds now()
 {
