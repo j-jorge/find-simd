@@ -7,7 +7,7 @@ COMPILE_OPTIONS=-O3 -DNDEBUG --std=c++11 \
 all: test-g++ test-clang++ test-icpc test-icpx
 
 test-g++: main.cpp
-	g++ $^ -o $@ $(COMPILE_OPTIONS)
+	g++-11 $^ -o $@ $(COMPILE_OPTIONS)
 
 test-clang++: main.cpp
 	clang++ $^ -o $@ $(COMPILE_OPTIONS)
