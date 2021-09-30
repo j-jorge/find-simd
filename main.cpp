@@ -177,7 +177,7 @@ BENCHMARK(benchmark_cpp)->VALUES;
 BENCHMARK(benchmark_sse2)->VALUES;
 
 template<typename F>
-int test_one(F&& f, int expected, int k, const int* v, size_t n)
+static int test_one(F&& f, int expected, int k, const int* v, size_t n)
 {
   const size_t r = f(k, v, n);
 
@@ -200,7 +200,7 @@ int test_one(F&& f, int expected, int k, const int* v, size_t n)
 }
 
 template<size_t N>
-int test_all(int expected, int k, const int (&v)[N])
+static int test_all(int expected, int k, const int (&v)[N])
 {
   return
     test_one(find_int_c, expected, k, v, N)
@@ -209,7 +209,7 @@ int test_all(int expected, int k, const int (&v)[N])
     + test_one(find_int_sse2, expected, k, v, N);
 }
 
-int test()
+static int test()
 {
   int r = test_one(find_int_c, 0, 42, nullptr, 0)
     + test_one(find_int_c_unrolled_8, 0, 42, nullptr, 0)
@@ -250,23 +250,15 @@ int test()
   return r;
 }
 
-std::chrono::milliseconds now()
+static std::chrono::milliseconds now()
 {
   return std::chrono::duration_cast<std::chrono::milliseconds>
     (std::chrono::steady_clock::now().time_since_epoch());
 }
 
-int main(int argc, char** argv)
+static int measure(int n)
 {
-  if (test() != 0)
-    return 1;
 
-  benchmark::Initialize(&argc, argv);
-  benchmark::RunSpecifiedBenchmarks();
-  benchmark::Shutdown();
-
-  return 0;
-  const int n = atoi(argv[1]);
   std::vector<int> values(n);
   std::iota(values.begin(), values.end(), 1);
 
@@ -274,6 +266,10 @@ int main(int argc, char** argv)
   const size_t p_c = find_int_c(values.back(), values.data(), n);
 
   const std::chrono::milliseconds end_c = now();
+  const size_t p_c_unrolled =
+    find_int_c_unrolled_8(values.back(), values.data(), n);
+
+  const std::chrono::milliseconds end_c_unrolled = now();
   const size_t p_cpp = find_int_cpp(values.back(), values.data(), n);
 
   const std::chrono::milliseconds end_cpp = now();
@@ -282,8 +278,17 @@ int main(int argc, char** argv)
   const std::chrono::milliseconds end_sse2 = now();
 
   std::cout << "C: " << (end_c - start).count() << " ms., "
-            << "C++: " << (end_cpp - end_c).count() << " ms., "
+            << "C unrolled: " << (end_c_unrolled - end_c).count() << " ms., "
+            << "C++: " << (end_cpp - end_c_unrolled).count() << " ms., "
             << "SSE2: " << (end_sse2 - end_cpp).count() << " ms.\n";
+
+  if (p_c_unrolled != p_sse2)
+    {
+      std::cerr << "Mismatch: c unrolled -> " << p_c_unrolled << ", sse2 -> "
+                << p_sse2
+                << '\n';
+      return 1;
+    }
 
   if (p_cpp != p_sse2)
     {
@@ -298,6 +303,26 @@ int main(int argc, char** argv)
                 << '\n';
       return 1;
     }
+
+  return 0;
+}
+
+int main(int argc, char** argv)
+{
+  if (test() != 0)
+    return 1;
+
+  if (argc == 2)
+    {
+      const int n = atoi(argv[1]);
+
+      if (n > 0)
+        return measure(n);
+    }
+
+  benchmark::Initialize(&argc, argv);
+  benchmark::RunSpecifiedBenchmarks();
+  benchmark::Shutdown();
 
   return 0;
 }
