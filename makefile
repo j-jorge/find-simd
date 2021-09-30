@@ -16,4 +16,6 @@ test-icpc: main.cpp
 	icpc $^ -o $@ $(COMPILE_OPTIONS)
 
 test-icpx: main.cpp
-	/opt/intel/oneapi/compiler/latest/linux/bin/icpx $^ -o $@ $(COMPILE_OPTIONS)
+	LD_LIBRARY_PATH="/opt/intel/oneapi/compiler/latest/linux/compiler/lib/intel64_lin/$(LD_LIBRARY_PATH):" \
+	  /opt/intel/oneapi/compiler/latest/linux/bin/icpx \
+	  $^ -o $@ $(COMPILE_OPTIONS)
