@@ -1,18 +1,60 @@
 #!/bin/bash
 
-if [ $# -eq 0 ]
+benchmarks=()
+compilers=()
+
+while [ $# -ne 0 ]
+do
+    arg="$1"
+    shift
+
+    if [ "$arg" = "--benchmark" ]
+    then
+        while [ $# -ne 0 ]
+        do
+            if [[ "$1" == --* ]]
+            then
+                break;
+            else
+                benchmarks+=("$1")
+                shift
+            fi
+        done
+    elif [ "$arg" = "--compiler" ]
+    then
+        while [ $# -ne 0 ]
+        do
+            if [[ "$1" == --* ]]
+            then
+                break;
+            else
+                compilers+=("$1")
+                shift
+            fi
+        done
+    fi
+done
+
+if [ "${#benchmarks[@]}" -eq 0 ]
 then
-    tags=(clang++ g++ icpc icpx)
-else
-    tags=("$@")
+    benchmarks=(last random)
+fi
+
+if [ "${#compilers[@]}" -eq 0 ]
+then
+    compilers=(clang++ g++ icpc icpx)
 fi
 
 intel_linux="/opt/intel/oneapi/compiler/latest/linux/"
 intel_libraries="${intel_linux}/compiler/lib/intel64_lin/"
 
-for tag in "${tags[@]}"
+for benchmark in "${benchmarks[@]}"
 do
-    echo "$tag"
-    LD_LIBRARY_PATH="${intel_libraries}:${LD_LIBRARY_PATH}" \
-        "./cmake-build/$tag/run-benchmark" --benchmark_format=csv > "$tag.csv";
+    for compiler in "${compilers[@]}"
+    do
+        echo "$compiler"
+        LD_LIBRARY_PATH="${intel_libraries}:${LD_LIBRARY_PATH}" \
+                       "./cmake-build/$compiler/benchmark-$benchmark" \
+                       --benchmark_format=csv > "$benchmark-$compiler.csv"
+    done
 done
