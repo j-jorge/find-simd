@@ -48,6 +48,8 @@ fi
 intel_linux="/opt/intel/oneapi/compiler/latest/linux/"
 intel_libraries="${intel_linux}/compiler/lib/intel64_lin/"
 
+mkdir measures
+
 for benchmark in "${benchmarks[@]}"
 do
     for compiler in "${compilers[@]}"
@@ -55,6 +57,7 @@ do
         echo "$compiler"
         LD_LIBRARY_PATH="${intel_libraries}:${LD_LIBRARY_PATH}" \
                        "./cmake-build/$compiler/benchmark-$benchmark" \
-                       --benchmark_format=csv > "$benchmark-$compiler.csv"
+                       --benchmark_format=csv \
+                       > "measures/$benchmark-$compiler.csv"
     done
 done

@@ -14,7 +14,7 @@ generate_plot_per_algo()
 
     for compiler in "${compilers[@]}"
     do
-        tail --lines +2 "$benchmark-$compiler.csv" \
+        tail --lines +2 "measures/$benchmark-$compiler.csv" \
             | sed 's/\//,/;s/"//g' \
             | while read -r algo size _ cpu_time _
         do
@@ -55,7 +55,7 @@ generate_plot_one_compiler()
     local benchmark="$1"
     local compiler="$2"
 
-    tail --lines +2 "$benchmark-$compiler.csv" \
+    tail --lines +2 "measures/$benchmark-$compiler.csv" \
         | sed 's/^[^_]\+_//;s/\//,/;s/"//g' \
         | awk -F, '
 {
@@ -178,7 +178,7 @@ generate_plot()
 
 for benchmark in last random
 do
-    if [ -f "$benchmark-g++.csv" ]
+    if [ -f "measures/$benchmark-g++.csv" ]
     then
         generate_plot "$benchmark"
     fi

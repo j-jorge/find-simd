@@ -2,4 +2,3 @@ cmake-build
 plot/data
 plot/png
 plot/scripts
-*.csv

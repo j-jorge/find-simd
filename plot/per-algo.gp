@@ -8,8 +8,8 @@ set ylabel "Processing time, nanoseconds"
 set yrange [0:12000000]
 set key Left left reverse
 
-set logscale x
-set logscale y
+#set logscale x
+#set logscale y
 
 system "mkdir --parents png/".ARG1
 
