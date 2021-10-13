@@ -48,7 +48,7 @@ fi
 intel_linux="/opt/intel/oneapi/compiler/latest/linux/"
 intel_libraries="${intel_linux}/compiler/lib/intel64_lin/"
 
-mkdir measures
+mkdir --parents measures
 
 for benchmark in "${benchmarks[@]}"
 do

@@ -50,7 +50,7 @@ intel_linux="/opt/intel/oneapi/compiler/latest/linux/"
 
 case "$1" in
      g++)
-         CXX=g++ build g++
+         CXX=g++-11 build g++
          ;;
      clang++)
          CXX=clang++ build clang++
