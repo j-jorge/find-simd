@@ -133,8 +133,54 @@ generate_gnuplot_one_compiler()
         then
             title="c (baseline)"
         else
-            title="${algo//_/\\\\_/}"
+            title="${algo//_/\\\\_}"
         fi
+
+        echo -n "$plot_command \"$relative_plot_file\" using 1:(\$$column/\$2) title \"$title\" with lines"
+        plot_command=", \\"$'\n'"     "
+        column=$((column+1))
+
+    done >> "$gnuplot_file"
+}
+
+generate_plot_all_compilers_and_algos()
+{
+    local benchmark="$1"
+
+    local gnuplot_file="plot/scripts/$benchmark/all.gp"
+    local plot_file="plot/data/$benchmark/all.plot"
+    local relative_plot_file="${plot_file#plot/}"
+
+    local join_tmp
+    join_tmp="$(mktemp)"
+    cp "plot/data/$benchmark/${compilers[0]}.plot" "$plot_file"
+
+    local compiler_count=${#compilers[@]}
+
+    for ((i=1; i!=$compiler_count; ++i))
+    do
+        join -t $'\t' \
+             "$plot_file" "plot/data/$benchmark/${compilers[$i]}.plot" \
+             > "$join_tmp"
+        cp "$join_tmp" "$plot_file"
+    done
+
+    rm "$join_tmp"
+
+    echo "set title \"Relative performance all compilers and algorithms\"" \
+         > "$gnuplot_file"
+
+    local plot_command="plot"
+    local column=2
+
+    local titles
+    read -r -a titles <<< "$(head --lines 1 "$plot_file" | cut -f2-)"
+    titles[0]="${titles[0]} (baseline)"
+
+    for title in "${titles[@]}"
+    do
+        compiler="${compilers[$(((column - 2) / compiler_count))]}"
+        title="$compiler/${title//_/\\\\_}"
 
         echo -n "$plot_command \"$relative_plot_file\" using 1:(\$$column/\$2) title \"$title\" with lines"
         plot_command=", \\"$'\n'"     "
@@ -152,6 +198,8 @@ generate_plot_per_compiler()
         generate_plot_one_compiler "$benchmark" "$compiler"
         generate_gnuplot_one_compiler "$benchmark" "$compiler"
     done
+
+    generate_plot_all_compilers_and_algos "$benchmark"
 }
 
 generate_plot()
@@ -173,6 +221,7 @@ generate_plot()
     cd plot
     gnuplot -c "per-algo.gp" "$benchmark"
     gnuplot -c "per-compiler.gp" "$benchmark"
+    gnuplot -c "all-compilers-and-algos.gp" "$benchmark"
     cd - > /dev/null
 }
 
